@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Défi Les Sybelles</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+:root{--snow:#f0f4ff;--ice:#c8daf5;--blue-deep:#0a1628;--blue-accent:#2563eb;--gold:#f5c842;--green:#22c55e;--text:#e8eeff;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--blue-deep);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+.mountain-bg{position:fixed;bottom:0;left:0;right:0;height:45vh;z-index:0;opacity:.07;pointer-events:none;}
+.stars{position:fixed;top:0;left:0;right:0;bottom:0;z-index:0;pointer-events:none;}
+.star{position:absolute;background:white;border-radius:50%;animation:twinkle var(--d) ease-in-out infinite alternate;}
+@keyframes twinkle{from{opacity:.1}to{opacity:.9}}
+.snowflake{position:fixed;top:-20px;color:rgba(255,255,255,.6);font-size:1.2em;animation:fall linear infinite;pointer-events:none;z-index:0;}
+@keyframes fall{to{top:100vh;transform:translateX(40px) rotate(360deg)}}
+.container{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+header{text-align:center;padding:3rem 0 2rem;animation:slideDown .8s ease both;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.badge{display:inline-block;background:var(--gold);color:var(--blue-deep);font-family:'Bebas Neue',sans-serif;font-size:.85rem;letter-spacing:.2em;padding:.3rem 1rem;border-radius:2px;margin-bottom:1rem;}
+h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(3.5rem,9vw,6.5rem);letter-spacing:.04em;line-height:.9;color:var(--snow);text-shadow:0 0 60px rgba(37,99,235,.5);}
+h1 span{color:var(--gold);}
+.subtitle{margin-top:1rem;font-size:1rem;font-weight:300;color:var(--ice);letter-spacing:.05em;}
+.admin-toggle{margin-top:1rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);font-size:.8rem;padding:.4rem 1rem;border-radius:20px;cursor:pointer;font-family:inherit;transition:all .2s;}
+.admin-toggle.active{background:rgba(245,200,66,.15);border-color:#f5c842;color:#f5c842;}
+.scoreboard{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:1.5rem;margin:2rem 0;backdrop-filter:blur(10px);animation:fadeIn .8s .3s ease both;}
+.scoreboard-title{font-family:'Bebas Neue',sans-serif;letter-spacing:.15em;font-size:1.1rem;color:var(--gold);margin-bottom:1rem;}
+.players-grid{display:flex;flex-wrap:wrap;gap:.75rem;}
+.player-chip{display:flex;align-items:center;gap:.6rem;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:50px;padding:.4rem .9rem .4rem .4rem;cursor:pointer;transition:all .2s;}
+.player-chip:hover{background:rgba(255,255,255,.14);transform:scale(1.03);}
+.player-chip.active{border-color:var(--gold);background:rgba(245,200,66,.15);}
+.player-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:.9rem;color:var(--blue-deep);}
+.player-name{font-size:.85rem;font-weight:600;}
+.player-pts{font-size:.75rem;color:var(--gold);font-weight:600;margin-left:4px;}
+.add-player-btn{background:transparent;border:1px dashed rgba(255,255,255,.3);border-radius:50px;color:var(--ice);padding:.4rem .9rem;font-family:'DM Sans',sans-serif;cursor:pointer;font-size:.85rem;transition:all .2s;}
+.add-player-btn:hover{border-color:var(--gold);color:var(--gold);}
+.days-section{margin-top:1rem;}
+.day-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;margin-bottom:1.2rem;overflow:hidden;transition:border-color .3s;animation:fadeIn .6s ease both;}
+.day-card:hover{border-color:rgba(255,255,255,.2);}
+.day-card.active-day{border-color:var(--blue-accent);box-shadow:0 0 30px rgba(37,99,235,.2);}
+.day-card.completed-day{border-color:rgba(34,197,94,.4);}
+.day-header{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:1rem;padding:1.2rem 1.5rem;cursor:pointer;user-select:none;}
+.day-number{font-family:'Bebas Neue',sans-serif;font-size:3rem;line-height:1;color:rgba(255,255,255,.15);width:2.5rem;}
+.day-card.active-day .day-number{color:var(--blue-accent);}
+.day-card.completed-day .day-number{color:var(--green);}
+.day-info h2{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.05em;line-height:1.1;color:var(--snow);}
+.day-info .station-name{font-size:.8rem;font-weight:300;color:var(--ice);letter-spacing:.08em;text-transform:uppercase;margin-top:.1rem;}
+.day-status{display:flex;flex-direction:column;align-items:flex-end;gap:.3rem;}
+.status-pill{font-size:.7rem;font-weight:600;letter-spacing:.1em;padding:.25rem .6rem;border-radius:20px;text-transform:uppercase;}
+.status-pill.todo{background:rgba(255,255,255,.1);color:var(--ice);}
+.status-pill.en-cours{background:rgba(37,99,235,.3);color:#93c5fd;}
+.status-pill.termine{background:rgba(34,197,94,.25);color:var(--green);}
+.altitude-info{font-size:.75rem;color:rgba(255,255,255,.4);}
+.day-body{padding:0 1.5rem 1.5rem;display:none;}
+.day-body.open{display:block;}
+.divider{height:1px;background:rgba(255,255,255,.07);margin-bottom:1.2rem;}
+.challenges-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.75rem;margin-bottom:1.2rem;}
+.challenge-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:.9rem 1rem;position:relative;cursor:pointer;transition:all .2s;}
+.challenge-card:hover{background:rgba(255,255,255,.09);transform:translateY(-2px);}
+.challenge-card.done{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.35);}
+.challenge-card.partial{background:rgba(37,99,235,.1);border-color:rgba(37,99,235,.35);}
+.challenge-card.check-type{border-left:3px solid rgba(52,211,153,.4);}
+.challenge-card.check-type.done{border-left-color:var(--green);}
+.challenge-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.4rem;}
+.challenge-icon{font-size:1.4rem;}
+.challenge-name{font-size:.85rem;font-weight:600;color:var(--snow);margin-bottom:.2rem;}
+.challenge-desc{font-size:.75rem;font-weight:300;color:rgba(255,255,255,.5);line-height:1.4;}
+.check-pts-badge{font-size:.75rem;color:#34d399;font-weight:700;}
+.challenge-pts-label{font-size:.75rem;color:var(--gold);font-weight:600;opacity:.8;}
+.challenge-ranks{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.5rem;}
+.crank-badge{font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:20px;white-space:nowrap;}
+.check-hint{font-size:.68rem;color:rgba(255,255,255,.3);margin-top:.4rem;font-style:italic;}
+.admin-check-zone{margin-top:.6rem;padding-top:.6rem;border-top:1px solid rgba(245,200,66,.2);}
+.bonus-card{border-radius:12px;padding:.9rem 1rem;cursor:default;transition:all .2s;}
+.day-scores{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem;}
+.day-score-chip{background:rgba(255,255,255,.06);border-radius:8px;padding:.4rem .8rem;font-size:.8rem;display:flex;gap:.5rem;align-items:center;}
+.day-score-pts{color:var(--gold);font-weight:700;}
+.day-meta{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem;}
+.meta-pill{display:flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.07);border-radius:8px;padding:.35rem .75rem;font-size:.78rem;color:var(--ice);}
+.meta-pill.pov{border-left:2px solid var(--gold);}
+.meta-pill.piste{border-left:2px solid #3b82f6;}
+.meta-pill.note-pill{border-left:2px solid var(--green);}
+.leaderboard{background:linear-gradient(135deg,rgba(245,200,66,.08),rgba(37,99,235,.08));border:1px solid rgba(245,200,66,.2);border-radius:16px;padding:1.5rem;margin-top:2rem;animation:fadeIn .8s .5s ease both;}
+.lb-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.1em;color:var(--gold);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;}
+.lb-row{display:flex;align-items:center;gap:1rem;padding:.6rem .5rem;border-radius:10px;transition:background .2s;}
+.lb-row:hover{background:rgba(255,255,255,.05);}
+.lb-rank{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;width:28px;text-align:center;color:rgba(255,255,255,.3);}
+.lb-row:nth-child(1) .lb-rank{color:var(--gold);}
+.lb-row:nth-child(2) .lb-rank{color:#d1d5db;}
+.lb-row:nth-child(3) .lb-rank{color:#cd7c2f;}
+.lb-bar-wrap{flex:1;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;}
+.lb-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--blue-accent),var(--gold));transition:width .6s cubic-bezier(.34,1.56,.64,1);}
+.lb-total{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--gold);min-width:50px;text-align:right;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.open{display:flex;}
+.modal{background:#0e1e3a;border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:2rem;width:90%;max-width:380px;animation:popIn .3s cubic-bezier(.34,1.56,.64,1) both;}
+.modal h3{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.05em;margin-bottom:1rem;color:var(--snow);}
+.modal input{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:10px;color:white;font-family:'DM Sans',sans-serif;font-size:1rem;padding:.75rem 1rem;outline:none;margin-bottom:1rem;transition:border-color .2s;}
+.modal input:focus{border-color:var(--blue-accent);}
+.modal-btns{display:flex;gap:.75rem;}
+.btn{flex:1;padding:.75rem;border-radius:10px;border:none;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.9rem;cursor:pointer;transition:all .2s;}
+.btn-primary{background:var(--blue-accent);color:white;}
+.btn-primary:hover{background:#1d4ed8;transform:scale(1.02);}
+.btn-ghost{background:rgba(255,255,255,.08);color:var(--ice);}
+.btn-ghost:hover{background:rgba(255,255,255,.14);}
+.ranking-modal{max-width:480px;max-height:85vh;overflow-y:auto;}
+.ranking-modal-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.05em;color:var(--snow);line-height:1.2;margin-bottom:.3rem;}
+.ranking-modal-sub{font-size:.78rem;color:rgba(255,255,255,.4);}
+.rank-row{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:.7rem .9rem;margin-bottom:.5rem;display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;}
+.rank-pos{font-family:'Bebas Neue',sans-serif;font-size:1rem;width:28px;text-align:center;color:rgba(255,255,255,.25);}
+.rank-pos.assigned{color:var(--gold);}
+.rank-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:.8rem;color:#0a1628;flex-shrink:0;}
+.rank-name{font-size:.88rem;font-weight:600;flex:1;min-width:50px;}
+.rank-pts-badge{font-size:.78rem;color:var(--gold);font-weight:700;min-width:40px;text-align:right;}
+.rank-btns{display:flex;gap:.3rem;flex-wrap:wrap;margin-left:auto;}
+.rank-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;color:var(--ice);font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;padding:.25rem .45rem;cursor:pointer;transition:all .15s;}
+.rank-btn:hover{background:rgba(255,255,255,.16);}
+.rank-btn.active{background:var(--gold);border-color:var(--gold);color:#0a1628;}
+.rank-btn.clear{background:rgba(230,57,70,.2);border-color:rgba(230,57,70,.4);color:#f87171;}
+.rules-card{background:rgba(255,255,255,.04);border:1px solid rgba(245,200,66,.25);border-radius:18px;margin:1.5rem 0;overflow:hidden;animation:fadeIn .8s .2s ease both;}
+.rules-header{display:flex;justify-content:space-between;align-items:center;padding:1.1rem 1.5rem;cursor:pointer;user-select:none;}
+.rules-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.15em;color:var(--gold);}
+.rules-toggle{color:var(--gold);font-size:.8rem;transition:transform .3s;}
+.rules-toggle.open{transform:rotate(180deg);}
+.rules-body{padding:0 1.5rem 1.5rem;display:none;}
+.rules-body.open{display:block;}
+.rules-intro{font-size:.9rem;color:var(--ice);font-style:italic;margin-bottom:1rem;padding-top:.2rem;}
+.rules-line{font-size:.88rem;color:var(--ice);margin-bottom:.3rem;}
+.admin-only{display:none;}
+body.admin-mode .admin-only{display:block;}
+body.admin-mode #rewardsHidden{display:none!important;}
+.rewards-list{display:flex;flex-direction:column;gap:.5rem;}
+.reward-row{display:flex;align-items:flex-start;gap:.75rem;background:rgba(255,255,255,.04);border-radius:10px;padding:.6rem .9rem;}
+.reward-row.last-place{background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.25);}
+.reward-medal{font-size:1.3rem;flex-shrink:0;margin-top:.1rem;}
+.reward-title{font-size:.88rem;font-weight:700;color:var(--snow);}
+.reward-prize{font-size:.78rem;font-weight:300;color:rgba(255,255,255,.55);margin-top:.1rem;}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+<div id="loadingOverlay" style="position:fixed;inset:0;background:#0a1628;z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#f5c842;letter-spacing:.1em">LES SKYBELLES</div>
+  <div style="color:rgba(255,255,255,.5);font-size:.9rem">Chargement en cours...</div>
+  <div style="width:40px;height:40px;border:3px solid rgba(255,255,255,.1);border-top-color:#f5c842;border-radius:50%;animation:spin .8s linear infinite"></div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+<div class="stars" id="stars"></div>
+<div id="snow"></div>
+<svg class="mountain-bg" viewBox="0 0 1440 400" fill="none"><path d="M0 400 L180 120 L320 250 L500 60 L680 200 L820 30 L1000 180 L1160 90 L1320 220 L1440 100 L1440 400Z" fill="white"/></svg>
+<div class="container">
+  <header>
+    <div class="badge">&#9975;&#65039; D&eacute;fi entre amis &middot; 6 jours</div>
+    <h1>LES<br><span>SKYBELLES</span></h1>
+    <p class="subtitle">690 km de pistes &middot; 5 stations &middot; Altitudes 1000&ndash;2620 m</p>
+    <button class="admin-toggle" id="adminToggle" onclick="toggleAdmin()" style="display:none">&#x1F512; Mode admin</button>
+  </header>
+  <div class="rules-card">
+    <div class="rules-header" onclick="toggleRules()">
+      <span class="rules-title">&#10052;&#65039; R&Egrave;GLES DU D&Eacute;FI</span>
+      <span class="rules-toggle" id="rulesToggle">&#9660;</span>
+    </div>
+    <div class="rules-body" id="rulesBody">
+      <div class="rules-intro">5 skieurs &middot; 6 jours &middot; 5 stations &mdash; le meilleur gagne !</div>
+      <div class="rules-line" style="font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.12em;color:rgba(255,255,255,.5);margin:1rem 0 .6rem">&#127381; COMMENT &Ccedil;A MARCHE</div><div class="rules-line">Chaque jour, des d&eacute;fis <b>individuels et collectifs</b> sont propos&eacute;s sur les pistes. Les points s'accumulent au fil des jours pour &eacute;tablir un <b>classement g&eacute;n&eacute;ral</b>.</div><div class="rules-line" style="margin-top:.5rem">&#x1F512; <b>Bonus cach&eacute; quotidien</b> : chaque jour, un bonus secret est disponible. Un indice en rouge vous guide &mdash; &agrave; vous de le trouver et de le r&eacute;aliser avant que l'admin l'attribue !</div><div class="rules-line" style="margin-top:.5rem">&#128680; <b>Gage quotidien</b> : le dernier du classement de chaque jour doit ex&eacute;cuter un gage impos&eacute; par le groupe &mdash; sans possibilit&eacute; de refus !</div><div class="rules-line" style="margin-top:.5rem">&#127942; <b>R&eacute;compenses finales</b> : en fin de s&eacute;jour, un classement g&eacute;n&eacute;ral est &eacute;tabli. Chaque participant re&ccedil;oit une r&eacute;compense en fonction de sa place &mdash; du meilleur au dernier !</div><div class="rules-line" style="font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.12em;color:rgba(255,255,255,.5);margin:1rem 0 .6rem">&#128247; AVANT DE PARTIR</div>
+      <div class="rules-line">T&eacute;l&eacute;charger une application de suivi de performances ski avant le d&eacute;part &mdash; <b>Slopes</b> ou <b>Ski Tracker</b> (iOS &amp; Android).</div>
+      <div class="rules-line admin-only" style="font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.12em;color:rgba(255,255,255,.5);margin:1rem 0 .6rem">&#127942; CLASSEMENT FINAL</div>
+      <div class="rewards-list admin-only" id="rewardsList"></div>
+      <div id="rewardsHidden" style="font-size:.85rem;color:rgba(255,255,255,.3);font-style:italic;padding:.5rem 0">&#x1F512; R&eacute;compenses visibles uniquement par l&apos;administrateur</div>
+    </div>
+  </div>
+  <div class="scoreboard">
+    <div class="scoreboard-title">&#128101; PARTICIPANTS</div>
+    <div class="players-grid" id="playersGrid">
+      <button class="add-player-btn" onclick="openAddPlayer()">+ Ajouter un skieur</button>
+    </div>
+  </div>
+  <div id="daysSection"></div>
+  <div class="leaderboard">
+    <div class="lb-title">&#127942; CLASSEMENT G&Eacute;N&Eacute;RAL &mdash; LES SKYBELLES</div>
+    <div id="lbRows"><p style="color:rgba(255,255,255,.3);font-size:.85rem;">Ajoutez des skieurs pour voir le classement</p></div>
+  </div>
+</div>
+
+<!-- Login Modal -->
+<div class="modal-overlay" id="loginModal" style="display:flex">
+  <div class="modal" style="text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:.5rem">&#9975;&#65039;</div>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:2px;color:#f5c842;margin-bottom:.25rem">LES SKYBELLES</h2>
+    <p style="font-size:.85rem;color:rgba(255,255,255,.4);margin-bottom:1.5rem">Qui es-tu ?</p>
+    <div id="loginButtons" style="display:flex;flex-direction:column;gap:.6rem"></div>
+  </div>
+</div>
+<!-- Admin Code Modal -->
+<div class="modal-overlay" id="adminCodeModal" style="display:none">
+  <div class="modal" style="text-align:center">
+    <div style="font-size:1.8rem;margin-bottom:.5rem">&#x1F512;</div>
+    <h3 style="color:#f5c842;margin-bottom:1rem">Code administrateur</h3>
+    <input type="password" id="adminCodeInput" placeholder="Code..." maxlength="20"
+      style="width:100%;padding:.75rem;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:white;font-size:1.1rem;text-align:center;margin-bottom:1rem;box-sizing:border-box"
+      onkeydown="if(event.key==='Enter')confirmAdmin()">
+    <div id="adminCodeError" style="color:#ef4444;font-size:.85rem;margin-bottom:.5rem;display:none">Code incorrect !</div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="document.getElementById('adminCodeModal').style.display='none'">Annuler</button>
+      <button class="btn btn-primary" onclick="confirmAdmin()">Valider &#10003;</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="addPlayerModal">
+  <div class="modal">
+    <h3>Nouveau Skieur</h3>
+    <input type="text" id="playerNameInput" placeholder="Pr&eacute;nom..." maxlength="20" onkeydown="if(event.key==='Enter')confirmAddPlayer()">
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="confirmAddPlayer()">Ajouter &#10003;</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="rankingModal" onclick="if(event.target===this)closeRankingModal()">
+  <div class="modal ranking-modal">
+    <div style="margin-bottom:1.2rem">
+      <div class="ranking-modal-title" id="rankingChallengeTitle"></div>
+      <div class="ranking-modal-sub">Attribue un rang &agrave; chaque skieur &middot; 1er = 25 pts &rarr; 5e = 5 pts</div>
+    </div>
+    <div id="rankingList"></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="closeRankingModal()">Valider &#10003;</button>
+  </div>
+</div>
+
+<script>
+var RANK_PTS = [25,20,15,10,5];
+var CHECK_PTS = 12;
+var challengeRanks = {};
+var completedChecks = {};
+var openDay = null;
+var activePlayer = null;
+var adminMode = false;
+
+var firebaseConfig = {
+  apiKey: "AIzaSyCibX8rCptLAbg-HrppD8RxnGPZpEKD0Us",
+  authDomain: "skybelles.firebaseapp.com",
+  databaseURL: "https://skybelles-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "skybelles",
+  storageBucket: "skybelles.firebasestorage.app",
+  messagingSenderId: "910901928158",
+  appId: "1:910901928158:web:724b655afa24459dba624f"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
+var myClientId = 'client_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+var isSaving = false;
+
+function pushState() {
+  isSaving = true;
+  var state = { challengeRanks: {}, completedChecks: {}, lastWriter: myClientId };
+  Object.keys(challengeRanks).forEach(function(k) {
+    if (Object.keys(challengeRanks[k]).length > 0) state.challengeRanks[k] = challengeRanks[k];
+  });
+  Object.keys(completedChecks).forEach(function(k) {
+    if (completedChecks[k].size > 0) {
+      var arr = [];
+      completedChecks[k].forEach(function(v) { arr.push(v); });
+      state.completedChecks[k] = arr;
+    }
+  });
+  db.ref('gameState').set(state, function() {
+    setTimeout(function() { isSaving = false; }, 500);
+  });
+}
+
+function applyState(data) {
+  if (!data) return;
+  if (data.challengeRanks) {
+    challengeRanks = {};
+    Object.keys(data.challengeRanks).forEach(function(k) {
+      challengeRanks[k] = data.challengeRanks[k];
+    });
+  } else {
+    challengeRanks = {};
+  }
+  if (data.completedChecks) {
+    completedChecks = {};
+    Object.keys(data.completedChecks).forEach(function(k) {
+      completedChecks[k] = new Set(data.completedChecks[k]);
+    });
+  } else {
+    completedChecks = {};
+  }
+}
+
+// Chargement initial
+db.ref('gameState').once('value', function(snap) {
+  applyState(snap.val());
+  var overlay = document.getElementById('loadingOverlay');
+  if (overlay) overlay.style.display = 'none';
+  renderPlayers(); renderDays(); renderLeaderboard();
+
+  // Sync temps réel après chargement initial
+  db.ref('gameState').on('value', function(snap) {
+    if (isSaving) return;
+    var data = snap.val();
+    if (!data) return;
+    if (data.lastWriter === myClientId) return;
+    applyState(data);
+    renderPlayers(); renderDays(); renderLeaderboard();
+  });
+});
+
+var REWARDS = [
+  {medal:"&#x1F947;",title:"Le roi des Skybelles !",prize:"Une petite bouteille de Chartreuse Verte"},
+  {medal:"&#x1F948;",title:"Presque champion !",prize:"Un digestif au restaurant"},
+  {medal:"&#x1F949;",title:"Bronze coul&eacute; !",prize:"Un caf&eacute; serr&eacute;"},
+  {medal:"&#x1F36B;",title:"Hors du podium !",prize:"Une tablette de chocolat"},
+  {medal:"&#x1F6A8;",title:"Looser !",prize:"Vid&eacute;o accent savoyard 30s dans le groupe &#x1F602;"}
+];
+
+var STATIONS = [
+  {name:"Le Corbier",tag:"LE CORBIER",alt:"1550&ndash;2265m",color:"#22c55e",emoji:"&#x1F7E2;"},
+  {name:"Saint-Sorlin-d'Arves",tag:"ST-SORLIN",alt:"1550&ndash;2620m",color:"#3b82f6",emoji:"&#x1F535;"},
+  {name:"La Toussuire",tag:"LA TOUSSUIRE",alt:"1750&ndash;2400m",color:"#ec4899",emoji:"&#x1F33A;"},
+  {name:"Saint-Jean-d'Arves",tag:"ST-JEAN",alt:"1550&ndash;2500m",color:"#8b5cf6",emoji:"&#x1F7E3;"},
+  {name:"Les Botti&egrave;res",tag:"LES BOTTI&Egrave;RES",alt:"1300&ndash;2000m",color:"#06b6d4",emoji:"&#x1F4A0;"}
+];
+
+var DAYS_DATA = [
+  {day:1,station:STATIONS[0],pov:"Pointe du Corbier 2265m",piste:"La Grande & La Petite Vadrouille",challenges:[
+    {id:"d1c1",type:"check",icon:"&#x1F4CD;",name:"POV : Pointe du Corbier",desc:"Atteindre la Pointe du Corbier (2265m) &mdash; selfie au panneau d'orientation.",pts:12},
+    {id:"d1c3",type:"check",icon:"&#x1F3BF;",name:"Pistes : La Grande &amp; La Petite Vadrouille",desc:"Descendre La Grande Vadrouille OU La Petite Vadrouille &mdash; photo du panneau comme preuve.",pts:12},
+    {id:"d1c8",type:"rank",icon:"&#x1F535;",name:"Carte mentale : Les Racourts",desc:"Sans regarder le plan, dessiner de m&eacute;moire le trac&eacute; de la piste bleue Les Racourts. Le plus fid&egrave;le gagne.",pts:25},
+    {id:"d1c4",type:"rank",icon:"&#x1F3AF;",name:"Arr&ecirc;t pr&eacute;cis",desc:"Tracer une ligne dans la neige. Chacun tente de s'arr&ecirc;ter le plus pr&egrave;s possible sans la d&eacute;passer.",pts:25},
+    {id:"d1c5",type:"rank",icon:"&#x1F602;",name:"Chute dramatique",desc:"Simuler la plus th&eacute;&acirc;trale des chutes sur neige molle &mdash; vid&eacute;o obligatoire. Jury note sur 10.",pts:25},
+    {id:"d1c6",type:"rank",icon:"&#x1F374;",name:"Le Coq des Bruy&egrave;res",desc:"Le premier qui aper&ccedil;oit le restaurant Le Coq des Bruy&egrave;res depuis les pistes gagne 25 pts.",pts:25},
+    {id:"d1c7",type:"rank",icon:"&#x1F9E9;",name:"&Eacute;nigme &mdash; Jour 1",desc:"Je monte les skieurs sans skier, je ne descends jamais, et pourtant tout le monde m'emprunte. Qui suis-je ?",answer:"Le t&eacute;l&eacute;si&egrave;ge &#x1F681;",pts:25},
+    {id:"d1c_boule",type:"rank",icon:"&#x26C4;",name:"Boule de neige &mdash; le plus loin",desc:"Faire rouler une boule de neige le plus loin possible sans qu'elle se casse.",pts:25},
+    {id:"d1c_cercle",type:"rank",icon:"&#x1F300;",name:"Grand cercle &mdash; Pirouette ou Petit Pr&eacute;",desc:"Sur la piste bleue Pirouette ou Petit Pr&eacute;, faire le plus grand cercle possible dans la neige. Le plus grand cercle gagne !",pts:25},
+    {id:"d1_bonus",type:"bonus",icon:"&#x1F512;",name:"Bonus Cach&eacute; &mdash; Jour 1",hint:"&#x1F534; <i>La victoire est plus belle quand tout le monde arrive</i>",desc:"Attendre le dernier du groupe en bas d'une piste sans qu'il le sache &mdash; sans le lui dire.",pts:40},
+    {id:"d1c9",type:"gage",icon:"&#x1F6A8;",name:"Gage du dernier &mdash; Jour 1",desc:"Le dernier du classement du Jour 1 doit se jeter la t&ecirc;te la premi&egrave;re dans la neige &mdash; vid&eacute;o obligatoire !",pts:0}
+  ]},
+  {day:2,station:STATIONS[1],pov:"Petit Perron 2271m &amp; Les 3 Lacs 2620m",piste:"La Balme",note:"Privil&eacute;gier le matin &#9728;&#65039;",challenges:[
+    {id:"d2c1",type:"check",icon:"&#x1F4CD;",name:"POV : Petit Perron 2271m",desc:"Selfie solo au sommet avec les Aiguilles d'Arves en fond.",pts:12},
+    {id:"d2c3",type:"check",icon:"&#x1F3BF;",name:"Piste Bleue : Combe Balme ou Marmottes",desc:"Descente en peloton &mdash; INTERDICTION de d&eacute;passer le meneur.",pts:12},
+    {id:"d2c4",type:"rank",icon:"&#x1F534;",name:"Piste rouge : Granges",desc:"Sur 50 m&egrave;tres, faire le maximum de virages. Les autres comptent.",pts:25},
+    {id:"d2c5",type:"rank",icon:"&#x1F602;",name:"&laquo;Le d&eacute;butant&raquo;",desc:"Descendre une bleue avec la fa&ccedil;on de skier la plus dr&ocirc;le possible. Jury note sur 10.",pts:25},
+    
+    {id:"d2c7",type:"rank",icon:"&#x1F3E0;",name:"Trouver le restaurant Le St So",desc:"Le premier &agrave; rep&eacute;rer Le St So depuis les pistes gagne 25 pts.",pts:25},
+    {id:"d2c8",type:"rank",icon:"&#x2753;",name:"QCM : La 6e station des Sybelles",desc:"Quelle est la 6e station ? A) Saint-Michel-les-Cimes &nbsp;B) Saint-Fran&ccedil;ois-Longchamp &nbsp;C) Les Cr&ecirc;tes-Blanches &nbsp;D) Val des Lauzes",pts:25},
+    
+    
+    
+    {id:"d2_bonus",type:"bonus",icon:"&#x1F512;",name:"Bonus Cach&eacute; &mdash; Jour 2",hint:"&#x1F534; <i>Le meilleur service est celui qu'on n'a pas demand&eacute;</i>",desc:"Offrir une bi&egrave;re &agrave; JA sans qu'il la demande &mdash; photo comme preuve.",pts:40},
+    {id:"d2c9",type:"gage",icon:"&#x1F6A8;",name:"Gage du dernier &mdash; Jour 2",desc:"Danser 10 secondes en tenue de ski au pied des remont&eacute;es devant des inconnus &mdash; vid&eacute;o obligatoire !",pts:0}
+  ]},
+  {day:3,station:STATIONS[2],pov:"T&ecirc;te de Bellard 2225m",piste:"St&eacute;phane et Laurence",challenges:[
+    {id:"d3c1",type:"check",icon:"&#x1F4CD;",name:"POV : T&ecirc;te de Bellard 2225m",desc:"Photo panoramique depuis le sommet.",pts:12},
+    {id:"d3c3",type:"check",icon:"&#x26AB;",name:"Piste noire : Les Trios ou Couloir",desc:"Descendre la piste noire Les Trios ou Couloir du haut en bas &mdash; photo ou vid&eacute;o en bas comme preuve.",pts:12},
+    {id:"d3c2",type:"check",icon:"&#x1F3BF;",name:"Piste : St&eacute;phane et Laurence",desc:"Descendre la piste en criant &laquo; Steph ! Steph ! &raquo; tout le long &mdash; vid&eacute;o obligatoire !",pts:12},
+    {id:"d3c10",type:"rank",icon:"&#x1F535;",name:"Virage qui remonte &mdash; Soleil ou Lac",desc:"Sur la piste bleue Soleil ou Lac, faire le virage qui remonte le plus haut possible. Celui qui remonte le plus loin gagne !",pts:25},
+    {id:"d3c7",type:"rank",icon:"&#x23F1;&#65039;",name:"Estimation de descente &mdash; C&ocirc;te du Bois",desc:"Chacun estime son temps &agrave; la seconde pr&egrave;s. Celui dont l'&eacute;cart est le plus faible gagne.",pts:25},
+    {id:"d3c4",type:"rank",icon:"&#x1F3AD;",name:"Portique le plus styl&eacute;",desc:"Passer son forfait de la fa&ccedil;on la plus dr&ocirc;le et originale possible. Jury note sur 10.",pts:25},
+    {id:"d3c5",type:"rank",icon:"&#x1F3E0;",name:"Trouver le chalet Le Foeh",desc:"Le premier qui rep&egrave;re le chalet Le Foeh depuis les pistes gagne 25 pts.",pts:25},
+    {id:"d3c11",type:"rank",icon:"&#x1F9E9;",name:"Charade &mdash; Jour 3",desc:"Mon premier est un pr&eacute;nom de saint &mdash; Mon deuxi&egrave;me est un mot qu'on utilise quand on ne trouve pas le bon mot &mdash; Mon tout est une remont&eacute;e m&eacute;canique de La Toussuire.",answer:"Pierre du Truc &#x1F3BF;",pts:25},
+    {id:"d3c_estimation",type:"rank",icon:"&#x1F4D0;",name:"Estimation &mdash; T&eacute;l&eacute;si&egrave;ge M&eacute;daille d'Or",desc:"Estimer la distance en m&egrave;tres entre le d&eacute;part et l'arriv&eacute;e du t&eacute;l&eacute;si&egrave;ge M&eacute;daille d'Or. Le plus proche de la vraie valeur gagne.",answer:"1257 m&egrave;tres",pts:25},
+    {id:"d2c_zigzag",type:"check",icon:"&#x1F300;",name:"Zigzag &mdash; Piste bleue Blanchons",desc:"Descendre la piste bleue Blanchons en zigzag en touchant les deux bords de la piste &agrave; chaque virage.",pts:12},
+    {id:"d2c_orientation",type:"rank",icon:"&#x1F9ED;",name:"Orientation &mdash; Haut de la Balme",desc:"Depuis le haut de la Balme, JA donne une direction (sommet, village, point de rep&egrave;re). Chacun pointe dans la bonne direction. Le plus pr&eacute;cis gagne !",pts:25},
+    {id:"d2c6",type:"check",icon:"&#x1F3AF;",name:"Bataille de boules de neige",desc:"Faire 4 touches sur 5 lancers pour valider le d&eacute;fi.",pts:12},
+    {id:"d3_bonus",type:"bonus",icon:"&#x1F512;",name:"Bonus Cach&eacute; &mdash; Jour 3",hint:"&#x1F534; <i>Il voit les pistes diff&eacute;remment des autres</i>",desc:"Entamer une discussion avec un moniteur de ski ou faire une photo avec lui.",pts:40},
+    {id:"d3c9",type:"gage",icon:"&#x1F6A8;",name:"Gage du dernier &mdash; Jour 3",desc:"Demander &agrave; un enfant comment il fait pour skier et le suivre pendant 10 secondes &mdash; vid&eacute;o obligatoire !",pts:0}
+  ]},
+  {day:4,station:STATIONS[3],pov:"Snowpark &amp; Boardercross",piste:"Panoramique du Lait",challenges:[
+    {id:"d2c2",type:"check",icon:"&#x26F0;&#65039;",name:"POV : Les 3 Lacs 2620m",desc:"Selfie collectif au point culminant du domaine.",pts:12},
+    {id:"d4c1",type:"rank",icon:"&#x1F938;",name:"Snowpark &mdash; figure impos&eacute;e",desc:"Chaque membre tente une figure. Vid&eacute;o obligatoire. Jury note le style sur 10.",pts:25},
+    {id:"d4c2",type:"rank",icon:"&#x1F3C1;",name:"Boardercross &mdash; course",desc:"Chacun annonce son temps estim&eacute; avant le d&eacute;part. Celui dont l'&eacute;cart entre le temps estim&eacute; et le temps r&eacute;el est le plus faible gagne !",pts:25},
+    {id:"d4c10",type:"rank",icon:"&#x1F919;",name:"Piste &agrave; bosses",desc:"Le plus de bosses ench&icirc;n&eacute;es sans tomber. Les autres comptent.",pts:25},
+    {id:"d4c3",type:"check",icon:"&#x1F3BF;",name:"Piste : Panoramique du Lait",desc:"Descendre en passant le plus de temps possible hors piste trac&eacute;e. Photo ou vid&eacute;o.",pts:12},
+    {id:"d4c4",type:"rank",icon:"&#x1F933;",name:"Selfie avec un inconnu",desc:"Aborder un inconnu dans la file du t&eacute;l&eacute;si&egrave;ge et lui demander un selfie.",pts:25},
+    
+    {id:"d4c7",type:"rank",icon:"&#x1F3AC;",name:"Commentaire TV en direct",desc:"Un volontaire commente &agrave; voix haute la descente d'un autre comme un journaliste sportif.",pts:25},
+    {id:"d4c8",type:"check",icon:"&#x1F6B4;",name:"QCM : Col de la Croix de Fer",desc:"Qui est le dernier vainqueur de l'&eacute;tape en 2023 ? A) Tadej Pogacar &nbsp;B) Jonas Vingegaard &nbsp;C) Thibaut Pinot",pts:12},
+    {id:"d4c11",type:"rank",icon:"&#x1F354;",name:"Trouver la Dameuse Foodtruck",desc:"Le premier &agrave; rep&eacute;rer le food truck et y commander quelque chose gagne 25 pts.",pts:25},
+    {id:"d4c_baton",type:"rank",icon:"&#x1F3AF;",name:"Lancer de b&acirc;tons &mdash; dans la zone",desc:"Depuis une distance impos&eacute;e, lancer ses deux b&acirc;tons pour les placer dans une zone d&eacute;limit&eacute;e dans la neige. Le premier &agrave; r&eacute;ussir les deux gagne 25 pts, puis 20, 15...",pts:25},
+    {id:"d4_bonus",type:"bonus",icon:"&#x1F512;",name:"Bonus Cach&eacute; &mdash; Jour 4",hint:"&#x1F534; <i>L'estomac aussi a ses propres pentes</i>",desc:"Demander &agrave; JA si son ventre va bien &mdash; sinc&egrave;rement et sans contexte pr&eacute;alable.",pts:40},
+    {id:"d4c9",type:"gage",icon:"&#x1F6A8;",name:"Gage du dernier &mdash; Jour 4",desc:"Imiter un pingouin pendant 10 secondes avant de mettre ses skis &mdash; bras coll&eacute;s au corps, petits pas &mdash; vid&eacute;o obligatoire !",pts:0}
+  ]},
+  {day:5,station:STATIONS[4],pov:"Grand Truc 2209m",piste:"La Chavonnerie",challenges:[
+    {id:"d5c1",type:"check",icon:"&#x1F4CD;",name:"POV : Grand Truc 2209m",desc:"Photo de groupe avec vue sur la vall&eacute;e de la Maurienne.",pts:12},
+    {id:"d5c2",type:"check",icon:"&#x1F3BF;",name:"Piste bleue : La Chavonnerie",desc:"Descendre la piste bleue La Chavonnerie avec les b&acirc;tons en l'air pendant toute la descente &mdash; vid&eacute;o obligatoire !",pts:12},
+    {id:"d5c3",type:"rank",icon:"&#x1F3AF;",name:"Slalom humain",desc:"Les 4 autres se placent comme des piquets. Rater un piquet = &eacute;limin&eacute;.",pts:25},
+    {id:"d5c4",type:"rank",icon:"&#x1F3C1;",name:"Course &agrave; l'aveugle",desc:"Sur 50m de terrain plat, descendre les yeux ferm&eacute;s. Celui qui va le plus loin gagne.",pts:25},
+    {id:"d5c5",type:"rank",icon:"&#x1F9E9;",name:"Devinettes dans le t&eacute;l&eacute;si&egrave;ge",desc:"3 devinettes dans le t&eacute;l&eacute;si&egrave;ge &mdash; celui qui en r&eacute;pond le plus gagne ! 1) Plus on est nombreux, plus je suis grande. Je disparais quand on se dispute. Qui suis-je ? 2) Je co&ucirc;te rien mais vaux tout, surtout apr&egrave;s une chute. Qui suis-je ? 3) On me partage sans se diviser. Qui suis-je ?",answer:"1) La bonne humeur &mdash; 2) Le fou rire &mdash; 3) Un souvenir",pts:25},
+    {id:"d5c6",type:"rank",icon:"&#x270A;",name:"Pierre Feuille Ciseaux &mdash; tournoi",desc:"Tournoi en cha&icirc;ne dans le t&eacute;l&eacute;si&egrave;ge. Le vainqueur gagne 25 pts.",pts:25},
+    {id:"d5c11",type:"rank",icon:"&#x1F328;&#65039;",name:"Neige dans la tronche",desc:"Envoyer un maximum de neige dans la tronche d'un autre participant &mdash; vid&eacute;o obligatoire.",pts:25},
+    {id:"d5c10",type:"rank",icon:"&#x2B07;&#65039;",name:"Le plus bas en altitude",desc:"Descendre le plus bas possible dans les Botti&egrave;res. Screenshot appli ski.",pts:25},
+    {id:"d5c_freinage",type:"rank",icon:"&#x1F6D1;",name:"Freinage d'urgence &mdash; 1, 2, 3 Soleil !",desc:"Tout le monde descend ensemble. JA crie 'Soleil !' sans pr&eacute;venir. Chacun doit s'arr&ecirc;ter le plus vite possible. Le dernier &agrave; s'arr&ecirc;ter perd. Plusieurs manches possibles.",pts:25},
+    {id:"d5_bonus",type:"bonus",icon:"&#x1F512;",name:"Bonus Cach&eacute; &mdash; Jour 5",hint:"&#x1F534; <i>Un vrai ami all&egrave;ge le chemin</i>",desc:"Porter les skis de JA sans qu'il le demande &mdash; jusqu'au pied des remont&eacute;es.",pts:40},
+    {id:"d5c9",type:"gage",icon:"&#x1F6A8;",name:"Gage du dernier &mdash; Jour 5",desc:"Faire la vaisselle du groupe jusqu'&agrave; la fin du s&eacute;jour &mdash; sans n&eacute;gociation possible !",pts:0}
+  ]},
+  {day:6,station:{name:"Tout le domaine",tag:"LES SYBELLES",alt:"1000&ndash;2620m",color:"#f5c842",emoji:"&#11088;"},pov:"Tout le domaine &mdash; libre !",piste:"Au choix",challenges:[
+    {id:"d1c2",type:"check",icon:"&#x26F0;&#65039;",name:"POV : L'Ouillon 2431m",desc:"Photo panoramique de tout le groupe face aux sommets.",pts:12},
+    {id:"d6c1",type:"rank",icon:"&#x1F4CF;",name:"Le plus de kilom&egrave;tres",desc:"Celui qui a parcouru le plus de km gagne. Screenshot appli ski obligatoire.",pts:12},
+    {id:"d6c2",type:"rank",icon:"&#x1F933;",name:"La plus belle photo de groupe",desc:"Chaque membre propose une photo de groupe prise pendant le s&eacute;jour. Vote collectif &mdash; la plus belle gagne !",pts:12},
+    {id:"d6c3",type:"rank",icon:"&#x1F37A;",name:"Le plus de bi&egrave;res",desc:"Celui qui a bu le plus de bi&egrave;res gagne &mdash; comptage &agrave; l'honneur.",pts:12},
+    {id:"d6c4",type:"rank",icon:"&#x23F1;&#65039;",name:"La plus longue descente non-stop",desc:"La descente la plus longue sans s'arr&ecirc;ter, track&eacute;e sur appli.",pts:12},
+    {id:"d6c5",type:"rank",icon:"&#x1F7E2;",name:"Le plus de pistes vertes",desc:"Celui qui descend le plus de pistes vertes dans la journ&eacute;e gagne. Tenir son propre comptage.",pts:12},
+    {id:"d6c11",type:"rank",icon:"&#x1F4F8;",name:"La plus belle photo en action",desc:"Chacun doit &ecirc;tre pris en photo pendant une descente. Vote collectif.",pts:12},
+    {id:"d6c8",type:"rank",icon:"&#x1F985;",name:"Le plus beau saut",desc:"Chacun tente le plus beau saut. Jury note le style, la hauteur et la r&eacute;ception.",pts:12},
+    {id:"d6c7",type:"rank",icon:"&#x1F4A5;",name:"Le plus de chutes",desc:"Celui qui a fait le plus de chutes involontaires gagne 25 pts.",pts:12},
+    {id:"d6c_blague",type:"rank",icon:"&#x1F602;",name:"La blague la plus dr&ocirc;le",desc:"Chacun raconte sa meilleure blague. Vote du groupe &mdash; celui qui fait le plus rire gagne !",pts:12},
+    {id:"d6c_noires",type:"rank",icon:"&#x26AB;",name:"Le plus de pistes noires",desc:"Celui qui descend le plus de pistes noires diff&eacute;rentes dans la journ&eacute;e gagne. Tenir son propre comptage.",pts:12},
+    {id:"d6c_altitude",type:"rank",icon:"&#x26F0;&#65039;",name:"Le plus haut en altitude",desc:"Celui qui atteint le point le plus haut en altitude dans la journ&eacute;e gagne. Screenshot appli ski obligatoire.",pts:12},
+    {id:"d6_bonus",type:"bonus",icon:"&#x1F512;",name:"Bonus Cach&eacute; &mdash; Jour 6",hint:"&#x1F534; <i>La neige efface les traces mais pas les scores aux jeux</i>",desc:"Celui qui a le plus souvent fini dernier aux jeux de soci&eacute;t&eacute; du s&eacute;jour remporte le bonus &mdash; &agrave; d&eacute;terminer par le groupe.",pts:40},
+    {id:"d6c10",type:"gage",icon:"&#x1F4F8;",name:"Gage du dernier &mdash; Classement g&eacute;n&eacute;ral",desc:"Poster une photo ridicule impos&eacute;e par le groupe sur le groupe Palourdes &mdash; sans possibilit&eacute; de refus !",pts:0},
+    {id:"d6c6",type:"check",icon:"&#x1F451;",name:"C&eacute;r&eacute;monie de cl&ocirc;ture",desc:"Remise officielle des prix au bar. Discours du champion, honte pour le dernier.",pts:0}
+  ]}
+];
+
+var INITIAL_PLAYERS = [
+  {id:"p_olivia",name:"Oli'gloo",color:"#ec4899"},
+  {id:"p_maxime",name:"Max'imum de flocons",color:"#3b82f6"},
+  {id:"p_yann",name:"Yannou'verture des pistes",color:"#f5c842"},
+  {id:"p_thomas",name:"Yassou'pe de neige",color:"#8b5cf6"},
+  {id:"p_mathieu",name:"Mat'in\u00e9e poudreuse",color:"#f97316"}
+];
+var players = INITIAL_PLAYERS.map(function(p){return {id:p.id,name:p.name,color:p.color};});
+var AVATAR_COLORS = ["#f5c842","#3b82f6","#ec4899","#22c55e","#8b5cf6","#f97316","#06b6d4","#ef4444"];
+
+function getPlayerTotal(pid){
+  var total=0;
+  Object.keys(challengeRanks).forEach(function(cid){
+    var r=challengeRanks[cid][pid];
+    if(r!==undefined) total+=RANK_PTS[r-1]||0;
+  });
+  DAYS_DATA.forEach(function(day){
+    day.challenges.forEach(function(c){
+      if(c.type==="check"&&c.pts>0&&(completedChecks[c.id]||new Set()).has(pid)) total+=CHECK_PTS;
+      else if(c.type==="bonus"&&(completedChecks[c.id]||new Set()).has(pid)) total+=c.pts;
+    });
+  });
+  return total;
+}
+
+function getDayMax(){
+  var t=0;
+  DAYS_DATA.forEach(function(d){d.challenges.forEach(function(c){
+    if(c.type==="check"&&c.pts>0) t+=CHECK_PTS;
+    else if(c.type==="rank") t+=RANK_PTS[0];
+    else if(c.type==="bonus") t+=c.pts;
+  });});
+  return t;
+}
+
+function toggleAdmin(){
+  adminMode=!adminMode;
+  document.body.classList.toggle("admin-mode",adminMode);
+  var btn=document.getElementById("adminToggle");
+  btn.textContent=adminMode?"&#x1F513; Mode admin ON":"&#x1F512; Mode admin";
+  btn.classList.toggle("active",adminMode);
+  renderPlayers(); renderDays(); renderLeaderboard();
+}
+
+function login(pid){
+  activePlayer=pid;
+  document.getElementById("loginModal").style.display="none";
+  if(pid==="admin_ja") document.getElementById("adminToggle").style.display="inline-block";
+  renderPlayers(); renderDays(); renderLeaderboard();
+}
+
+function buildLoginButtons(){
+  var c=document.getElementById("loginButtons");
+  INITIAL_PLAYERS.forEach(function(p){
+    var btn=document.createElement("button");
+    btn.className="btn btn-primary";
+    btn.style.cssText="background:"+p.color+";color:#0a1628;font-weight:700;font-size:1rem;padding:.75rem;border-radius:12px;border:none;cursor:pointer;margin-bottom:.2rem";
+    btn.textContent=p.name;
+    btn.onclick=(function(id){return function(){login(id);};})(p.id);
+    c.appendChild(btn);
+  });
+  var ab=document.createElement("button");
+  ab.className="btn btn-ghost";
+  ab.style.cssText="margin-top:.5rem;font-size:.8rem;color:rgba(255,255,255,.3)";
+  ab.textContent="\u{1F512} Acc\u00e8s administrateur";
+  ab.onclick=function(){
+    document.getElementById("adminCodeModal").style.display="flex";
+    setTimeout(function(){document.getElementById("adminCodeInput").focus();},100);
+  };
+  c.appendChild(ab);
+  var rl=document.getElementById("rewardsList");
+  REWARDS.forEach(function(r,i){
+    var row=document.createElement("div");
+    row.className="reward-row"+(i===4?" last-place":"");
+    row.innerHTML="<span class='reward-medal'>"+r.medal+"</span><div><div class='reward-title'>"+r.title+"</div><div class='reward-prize'>"+r.prize+"</div></div>";
+    rl.appendChild(row);
+  });
+}
+
+function confirmAdmin(){
+  var code=document.getElementById("adminCodeInput").value.trim();
+  if(code==="skybelles"){
+    document.getElementById("adminCodeModal").style.display="none";
+    document.getElementById("adminCodeInput").value="";
+    document.getElementById("adminCodeError").style.display="none";
+    activePlayer="admin_ja";
+    document.getElementById("loginModal").style.display="none";
+    document.getElementById("adminToggle").style.display="inline-block";
+    if(!adminMode) toggleAdmin();
+    else{renderPlayers();renderDays();renderLeaderboard();}
+  } else {
+    document.getElementById("adminCodeError").style.display="block";
+    document.getElementById("adminCodeInput").value="";
+    document.getElementById("adminCodeInput").focus();
+  }
+}
+
+function toggleCheckFor(cid,pid){
+  if(!completedChecks[cid]) completedChecks[cid]=new Set();
+  if(completedChecks[cid].has(pid)) completedChecks[cid].delete(pid);
+  else completedChecks[cid].add(pid);
+  renderPlayers(); renderLeaderboard(); renderDays();
+}
+
+function toggleCheck(cid){
+  if(!activePlayer) return;
+  if(!completedChecks[cid]) completedChecks[cid]=new Set();
+  if(completedChecks[cid].has(activePlayer)) completedChecks[cid].delete(activePlayer);
+  else completedChecks[cid].add(activePlayer);
+  renderPlayers(); renderLeaderboard(); renderDays();
+}
+
+function openAddPlayer(){document.getElementById("addPlayerModal").classList.add("open");document.getElementById("playerNameInput").focus();}
+function closeModal(){document.getElementById("addPlayerModal").classList.remove("open");document.getElementById("playerNameInput").value="";}
+function confirmAddPlayer(){
+  var name=document.getElementById("playerNameInput").value.trim();
+  if(!name) return;
+  var id="p"+Date.now();
+  var color=AVATAR_COLORS[players.length%AVATAR_COLORS.length];
+  players.push({id:id,name:name,color:color});
+  if(!activePlayer) activePlayer=id;
+  closeModal(); renderPlayers(); renderLeaderboard();
+}
+
+function renderPlayers(){
+  var grid=document.getElementById("playersGrid");
+  grid.innerHTML="";
+  if(activePlayer==="admin_ja"){
+    var ja=document.createElement("div");
+    ja.className="player-chip active";
+    ja.style.cssText="border-color:#f5c842;background:rgba(245,200,66,.1)";
+    ja.innerHTML="<div class='player-avatar' style='background:#f5c842;color:#0a1628'>J</div><span class='player-name'>JA &#x1F513;</span><span class='player-pts' style='color:#f5c842'>Admin</span>";
+    grid.appendChild(ja);
+  }
+  players.forEach(function(p){
+    var el=document.createElement("div");
+    var isMe=p.id===activePlayer;
+    el.className="player-chip"+(isMe?" active":"");
+    if(adminMode){
+      el.onclick=(function(pid){return function(){activePlayer=pid;renderPlayers();renderDays();};})(p.id);
+      el.style.cursor="pointer";
+    }
+    var pts=getPlayerTotal(p.id);
+    el.innerHTML="<div class='player-avatar' style='background:"+p.color+"'>"+p.name[0].toUpperCase()+"</div><span class='player-name'>"+p.name+(isMe?" &#x1F464;":"")+"</span><span class='player-pts'>"+pts+"pts</span>";
+    grid.appendChild(el);
+  });
+  var ab=document.createElement("button");
+  ab.className="add-player-btn";
+  ab.onclick=openAddPlayer;
+  ab.textContent="+ Ajouter un skieur";
+  grid.appendChild(ab);
+}
+
+var rankingModal={cid:null,cname:null};
+
+function openRankingModal(cid,cname){
+  rankingModal={cid:cid,cname:cname};
+  var existing=challengeRanks[cid]||{};
+  document.getElementById("rankingChallengeTitle").innerHTML=cname;
+  var list=document.getElementById("rankingList");
+  list.innerHTML="";
+  var ranked=players.map(function(p){return {id:p.id,name:p.name,color:p.color,rank:existing[p.id]||null};})
+    .sort(function(a,b){return (a.rank||99)-(b.rank||99);});
+  ranked.forEach(function(p){
+    var row=document.createElement("div");
+    row.className="rank-row";
+    var cr=existing[p.id];
+    var pts=cr?RANK_PTS[cr-1]:null;
+    var rl=cr?cr+(cr===1?"er":"e"):"&mdash;";
+    var btns=[1,2,3,4,5].map(function(r){
+      var active=cr===r?" active":"";
+      return "<button class='rank-btn"+active+"' onclick='setRank(\""+p.id+"\","+r+")'>"+r+(r===1?"er":"e")+"</button>";
+    }).join("");
+    if(cr) btns+="<button class='rank-btn clear' onclick='clearRank(\""+p.id+"\")'>&#x2715;</button>";
+    row.innerHTML="<div class='rank-pos"+(cr?" assigned":"")+"'>"+rl+"</div><div class='rank-avatar' style='background:"+p.color+"'>"+p.name[0]+"</div><div class='rank-name'>"+p.name+"</div><div class='rank-pts-badge'>"+(pts?pts+" pts":"")+"</div><div class='rank-btns'>"+btns+"</div>";
+    list.appendChild(row);
+  });
+  document.getElementById("rankingModal").classList.add("open");
+}
+
+function setRank(pid,rank){
+  var cid=rankingModal.cid;
+  if(!challengeRanks[cid]) challengeRanks[cid]={};
+  Object.keys(challengeRanks[cid]).forEach(function(oid){if(challengeRanks[cid][oid]===rank) delete challengeRanks[cid][oid];});
+  challengeRanks[cid][pid]=rank;
+  openRankingModal(cid,rankingModal.cname);
+  renderPlayers(); renderLeaderboard(); renderDays();
+}
+
+function clearRank(pid){
+  var cid=rankingModal.cid;
+  if(challengeRanks[cid]) delete challengeRanks[cid][pid];
+  openRankingModal(cid,rankingModal.cname);
+  renderPlayers(); renderLeaderboard(); renderDays();
+}
+
+function closeRankingModal(){
+  document.getElementById("rankingModal").classList.remove("open");
+  renderDays();
+}
+
+function toggleRules(){
+  document.getElementById("rulesBody").classList.toggle("open");
+  document.getElementById("rulesToggle").classList.toggle("open");
+}
+
+function makeCard(html){var d=document.createElement("div");d.innerHTML=html;return d.firstChild;}
+
+function renderDays(){
+  var section=document.getElementById("daysSection");
+  section.innerHTML="";
+  DAYS_DATA.forEach(function(dayData,idx){
+    var isOpen=openDay===idx;
+    var anyDone=false,allDone=true;
+    dayData.challenges.forEach(function(c){
+      if(c.type==="bonus") return;
+      if(c.type==="gage") return;
+      if(c.type==="check"){
+        var set=completedChecks[c.id]||new Set();
+        if(set.size>0) anyDone=true;
+        if(set.size<players.length) allDone=false;
+      } else {
+        var ranks=challengeRanks[c.id]||{};
+        if(Object.keys(ranks).length>0) anyDone=true;
+        if(Object.keys(ranks).length<players.length) allDone=false;
+      }
+    });
+    if(players.length===0){anyDone=false;allDone=false;}
+
+    var sc=!anyDone?"todo":allDone?"termine":"en-cours";
+    var sl=sc==="todo"?"&Agrave; faire":(sc==="termine"?"&#10003; Termin&eacute;":"&#9654; En cours");
+    var cc=sc==="en-cours"?"active-day":sc==="termine"?"completed-day":"";
+    var isLocked=isDayLocked(idx);
+
+    var cHTML="";
+    dayData.challenges.forEach(function(c){
+      if(c.type==="gage"){
+        cHTML+="<div class='challenge-card check-type' style='border-left-color:rgba(239,68,68,.4);cursor:default;opacity:.85'><div class='challenge-top'><span class='challenge-icon'>"+c.icon+"</span><span style='font-size:.75rem;color:#ef4444;font-weight:700'>Gage journ&eacute;e</span></div><div class='challenge-name'>"+c.name+"</div><div class='challenge-desc'>"+c.desc+"</div><div style='font-size:.72rem;color:rgba(255,255,255,.3);margin-top:.4rem;font-style:italic'>Attribu&eacute; au dernier du classement du jour</div></div>";
+        return;
+      }
+      if(c.type==="bonus"){
+        var bset=completedChecks[c.id]||new Set();
+        var unlocked=bset.size>0;
+        var winner=null;
+        if(unlocked) players.forEach(function(p){if(bset.has(p.id)) winner=p;});
+        var adminBtnHTML="";
+        if(adminMode){
+          var btns=players.map(function(p){
+            var done=bset.has(p.id);
+            var bg=done?p.color:"rgba(255,255,255,.08)";
+            var col=done?"#0a1628":"white";
+            var fw=done?"700":"400";
+            var chk=done?"&#10003; ":"";
+            return "<button onclick=\"toggleCheckFor('"+c.id+"','"+p.id+"')\" style=\"background:"+bg+";color:"+col+";border:1px solid "+p.color+";border-radius:20px;padding:.25rem .6rem;font-size:.8rem;cursor:pointer;font-weight:"+fw+"\">"+chk+p.name+"</button>";
+          }).join("");
+          adminBtnHTML="<div class='admin-check-zone'><div style='font-size:.75rem;color:#f5c842;margin-bottom:.4rem;font-weight:700'>&#x1F513; Admin &mdash; attribuer &agrave; :</div><div style='display:flex;flex-wrap:wrap;gap:.4rem'>"+btns+"</div></div>";
+        }
+        var border=unlocked?"rgba(245,200,66,.5)":"rgba(245,200,66,.2)";
+        var bg=unlocked?"rgba(245,200,66,.12)":"rgba(245,200,66,.04)";
+        var icon=unlocked?"&#x1F48E;":"&#x1F512;";
+        var hintHTML=c.hint?"<div style='font-size:.75rem;color:#ef4444;margin-top:.4rem;font-style:italic'>"+c.hint+"</div>":"";
+        var bodyHTML=unlocked
+          ?"<div class='challenge-desc' style='color:rgba(255,255,255,.6)'>"+c.desc+"</div>"+(winner?"<div style='margin-top:.5rem'><span class='crank-badge' style='background:"+winner.color+";color:#0a1628'>&#x1F48E; "+winner.name+"</span></div>":"")
+          :"<div class='challenge-desc' style='color:rgba(255,255,255,.3);font-style:italic'>Bonus secret &mdash; &agrave; d&eacute;bloquer par l'admin</div>"+hintHTML;
+        cHTML+="<div class='challenge-card' style='border:1px solid "+border+";background:"+bg+";cursor:default'><div class='challenge-top'><span class='challenge-icon'>"+icon+"</span><span style='font-family:Bebas Neue,sans-serif;font-size:1.1rem;color:var(--gold)'>"+c.pts+" pts</span></div><div class='challenge-name' style='color:var(--gold)'>"+c.name+"</div>"+bodyHTML+adminBtnHTML+"</div>";
+        return;
+      }
+      if(c.type==="check"){
+        var set=completedChecks[c.id]||new Set();
+        var adone=activePlayer&&set.has(activePlayer);
+        var cnt=set.size;
+        var badges="";
+        if(cnt>0) badges="<div class='challenge-ranks'>"+players.filter(function(p){return set.has(p.id);}).map(function(p){return "<span class='crank-badge' style='background:"+p.color+";color:#0a1628'>&#10003; "+p.name+"</span>";}).join("")+"</div>";
+        var ahint="";
+        if(adminMode){
+          var abtns=players.map(function(p){
+            var done=set.has(p.id);
+            var bg=done?p.color:"rgba(255,255,255,.08)";
+            var col=done?"#0a1628":"white";
+            var fw=done?"700":"400";
+            var chk=done?"&#10003; ":"";
+            return "<button onclick=\"toggleCheckFor('"+c.id+"','"+p.id+"')\" style=\"background:"+bg+";color:"+col+";border:1px solid "+p.color+";border-radius:20px;padding:.25rem .6rem;font-size:.8rem;cursor:pointer;font-weight:"+fw+"\">"+chk+p.name+"</button>";
+          }).join("");
+          ahint="<div class='admin-check-zone'><div style='font-size:.75rem;color:#f5c842;margin-bottom:.4rem;font-weight:700'>&#x1F513; Admin &mdash; cocher pour :</div><div style='display:flex;flex-wrap:wrap;gap:.4rem'>"+abtns+"</div></div>";
+        } else {
+          var pn=activePlayer?(players.find(function(p){return p.id===activePlayer;})||{name:"&mdash;"}).name:"&mdash;";
+          ahint="<div class='check-hint'>Tap pour cocher pour <strong>"+pn+"</strong></div>";
+        }
+        var ocl=adminMode?"":"toggleCheck('"+c.id+"')";
+        var cls="challenge-card check-type"+(adone?" done":cnt>0?" partial":"");
+        cHTML+="<div class='"+cls+"' onclick=\""+ocl+"\"><div class='challenge-top'><span class='challenge-icon'>"+c.icon+"</span>"+(c.pts>0?"<span class='check-pts-badge'>12 pts</span>":"")+"</div><div class='challenge-name'>"+c.name+"</div><div class='challenge-desc'>"+c.desc+"</div>"+badges+ahint+"</div>";
+        return;
+      }
+      // rank
+      var ranks=challengeRanks[c.id]||{};
+      var rc=Object.keys(ranks).length;
+      var isDone=rc===players.length;
+      var hasAny=rc>0;
+      var rbadges="";
+      if(hasAny){
+        var sorted=players.filter(function(p){return ranks[p.id];}).sort(function(a,b){return ranks[a.id]-ranks[b.id];});
+        rbadges="<div class='challenge-ranks'>"+sorted.map(function(p){return "<span class='crank-badge' style='background:"+p.color+";color:#0a1628'>"+ranks[p.id]+(ranks[p.id]===1?"er":"e")+" "+p.name+"</span>";}).join("")+"</div>";
+      }
+      var ahint=adminMode?"<div style='font-size:.75rem;color:#f5c842;margin-top:.4rem'>&#x1F513; Tap pour attribuer les rangs</div>":"<div style='font-size:.75rem;color:rgba(255,255,255,.25);margin-top:.4rem'>R&eacute;sultats saisis par l'admin</div>";
+      var ahtml=c.answer&&adminMode?"<div style='margin-top:.5rem;padding:.4rem .7rem;background:rgba(245,200,66,.15);border:1px solid rgba(245,200,66,.4);border-radius:8px;font-size:.78rem;color:#f5c842;font-weight:700'>&#x1F513; R&eacute;ponse : "+c.answer+"</div>":"";
+      var ocl=adminMode?"openRankingModal('"+c.id+"','"+c.name+"')":"";
+      cHTML+="<div class='challenge-card"+(isDone?" done":hasAny?" partial":"")+"' onclick=\""+ocl+"\"><div class='challenge-top'><span class='challenge-icon'>"+c.icon+"</span><span class='challenge-pts-label'>25&rarr;5 pts</span></div><div class='challenge-name'>"+c.name+"</div><div class='challenge-desc'>"+c.desc+"</div>"+ahtml+rbadges+ahint+"</div>";
+    });
+
+    var dsHTML="<div class='day-scores'>";
+    players.forEach(function(p){
+      var dp=0;
+      dayData.challenges.forEach(function(c){
+        if(c.type==="check"&&c.pts>0&&(completedChecks[c.id]||new Set()).has(p.id)) dp+=CHECK_PTS;
+        else if(c.type==="bonus"&&(completedChecks[c.id]||new Set()).has(p.id)) dp+=c.pts;
+        else if(c.type==="rank"){var r=(challengeRanks[c.id]||{})[p.id];if(r) dp+=RANK_PTS[r-1];}
+      });
+      dsHTML+="<div class='day-score-chip'><span style='color:"+p.color+";font-weight:700'>"+p.name[0]+"</span>"+p.name+" <span class='day-score-pts'>"+dp+" pts</span></div>";
+    });
+    dsHTML+="</div>";
+
+    var notePill=dayData.note?"<div class='meta-pill note-pill'><span class='meta-icon'>&#9728;&#65039;</span>"+dayData.note+"</div>":"";
+    var meta="<div class='day-meta'><div class='meta-pill pov'><span class='meta-icon'>&#x1F4CD;</span>"+dayData.pov+"</div><div class='meta-pill piste'><span class='meta-icon'>&#x1F3BF;</span>"+dayData.piste+"</div>"+notePill+"</div>";
+
+    var card=document.createElement("div");
+    card.className="day-card "+cc;
+    card.style.animationDelay=idx*.1+"s";
+    card.innerHTML="<div class='day-header' onclick='toggleDay("+idx+")' style='"+(isLocked?"opacity:.4;cursor:not-allowed":"")+"'><div class='day-number'>"+dayData.day+"</div><div class='day-info'><h2>"+dayData.station.emoji+" "+dayData.station.tag+"</h2><div class='station-name'>"+dayData.station.name+"</div></div><div class='day-status'><span class='status-pill "+(isLocked?"todo":sc)+"'>"+(isLocked?"&#x1F512; Verrouill&eacute;":sl)+"</span><span class='altitude-info'>"+dayData.station.alt+"</span></div></div><div class='day-body"+(isOpen&&!isLocked?" open":"")+"'><div class='divider'></div>"+meta+"<div class='challenges-grid'>"+cHTML+"</div>"+dsHTML+"</div>";
+    section.appendChild(card);
+  });
+}
+
+function isDayComplete(idx){
+  var dayData=DAYS_DATA[idx];
+  if(!dayData) return false;
+  for(var i=0;i<dayData.challenges.length;i++){
+    var c=dayData.challenges[i];
+    if(c.type==="bonus"||c.type==="gage") continue;
+    if(c.type==="check"&&(completedChecks[c.id]||new Set()).size<players.length) return false;
+    if(c.type==="rank"&&Object.keys(challengeRanks[c.id]||{}).length<players.length) return false;
+  }
+  return true;
+}
+
+function isDayLocked(idx){
+  if(adminMode) return false;
+  if(idx===0) return false;
+  if(idx===1) return false;
+  if(idx===2) return false;
+  if(idx===3) return false;
+  return !isDayComplete(idx-1);
+}
+
+function toggleDay(idx){
+  if(isDayLocked(idx)) return;
+  openDay=openDay===idx?null:idx;
+  renderDays();
+}
+
+function renderLeaderboard(){
+  var el=document.getElementById("lbRows");
+  if(players.length===0){el.innerHTML="<p style='color:rgba(255,255,255,.3);font-size:.85rem;'>Ajoutez des skieurs pour voir le classement</p>";return;}
+  var maxT=getDayMax();
+  var allC=DAYS_DATA.every(function(_,i){return isDayComplete(i);});
+  var showR=adminMode||allC;
+  var sorted=players.map(function(p){return {id:p.id,name:p.name,color:p.color,total:getPlayerTotal(p.id)};}).sort(function(a,b){return b.total-a.total;});
+  el.innerHTML=sorted.map(function(p,i){
+    var rw=REWARDS[i]||REWARDS[REWARDS.length-1];
+    return "<div class='lb-row'><div class='lb-rank'>"+(showR?rw.medal:(i+1)+".")+"</div><div class='player-avatar' style='background:"+p.color+";width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:Bebas Neue,sans-serif;color:#0a1628;font-size:.85rem;flex-shrink:0'>"+p.name[0]+"</div><div style='flex:1;min-width:0'><div style='font-weight:600;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis'>"+p.name+"</div>"+(showR?"<div style='font-size:.7rem;color:rgba(255,255,255,.4);margin-top:1px'>"+rw.prize+"</div>":"")+"<div class='lb-bar-wrap' style='margin-top:4px'><div class='lb-bar' style='width:"+(maxT>0?p.total/maxT*100:0)+"%'></div></div></div><div class='lb-total'>"+p.total+"</div></div>";
+  }).join("");
+}
+
+function makeStars(){
+  var c=document.getElementById("stars");
+  for(var i=0;i<80;i++){
+    var s=document.createElement("div");
+    s.className="star";
+    var sz=Math.random()*2+1;
+    s.style.cssText="width:"+sz+"px;height:"+sz+"px;top:"+Math.random()*60+"%;left:"+Math.random()*100+"%;--d:"+(Math.random()*3+2).toFixed(1)+"s";
+    c.appendChild(s);
+  }
+}
+
+function makeSnow(){
+  var c=document.getElementById("snow");
+  for(var i=0;i<18;i++){
+    var s=document.createElement("div");
+    s.className="snowflake";
+    s.textContent="\u2744";
+    s.style.cssText="left:"+Math.random()*100+"%;font-size:"+(Math.random()*10+8)+"px;animation-duration:"+(Math.random()*6+6).toFixed(1)+"s;animation-delay:"+(Math.random()*8).toFixed(1)+"s;opacity:"+(Math.random()*.4+.2).toFixed(2);
+    c.appendChild(s);
+  }
+}
+
+makeStars();
+makeSnow();
+buildLoginButtons();
+</script>
+</body>
+</html>
